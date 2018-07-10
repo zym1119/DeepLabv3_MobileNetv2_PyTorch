@@ -53,4 +53,4 @@ At last, run `python main.py --root /your/path/to/dataset/` or just run `python 
 
 After training, tensorboard is also available to observe training procedure using `tensorboard --logdir=./exp_dir/summaries`
 
-If you have some question, please leave a issue.
+If you have some question, please leave an issue.
