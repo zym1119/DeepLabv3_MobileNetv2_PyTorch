@@ -6,7 +6,6 @@ from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 import layers
 from progressbar import bar
-from config import Params
 
 WARNING = lambda x: '\033[1;31;2mWARNING: ' + x + '\033[0m'
 
@@ -37,7 +36,7 @@ class MobileNetv2_DeepLabv3(nn.Module):
         # conv layer 1
         block.append(nn.Sequential(nn.Conv2d(3, self.params.c[0], 3, stride=self.params.s[0], padding=1, bias=False),
                                    nn.BatchNorm2d(self.params.c[0]),
-                                   nn.Dropout2d(self.params.dropout_prob, inplace=True),
+                                   # nn.Dropout2d(self.params.dropout_prob, inplace=True),
                                    nn.ReLU6()))
 
         # conv layer 2-7
@@ -53,7 +52,7 @@ class MobileNetv2_DeepLabv3(nn.Module):
                                                  t=self.params.t[6], s=1, dilation=rate*self.params.multi_grid[i]))
 
         # ASPP layer
-        block.append(layers.ASPP(self.params))
+        block.append(layers.ASPP_plus(self.params))
 
         # final conv layer
         block.append(nn.Conv2d(256, self.params.num_class, 1))
@@ -143,7 +142,7 @@ class MobileNetv2_DeepLabv3(nn.Module):
             m is defined in params.val_every
         """
         # TODO: add IoU compute function
-        print('Testing:')
+        print('Validating:')
 
         # set mode eval
         self.network.eval()
@@ -218,6 +217,8 @@ class MobileNetv2_DeepLabv3(nn.Module):
         # save the last network state
         self.save_checkpoint()
 
+        # TODO: add train visualization
+
     def Test(self):
         """
         Test network on test set
@@ -249,7 +250,7 @@ class MobileNetv2_DeepLabv3(nn.Module):
         """
         Adjust learning rate at each epoch
         """
-        learning_rate = self.params.base_lr * (1 - self.epoch / self.params.num_epoch) ** self.params.power
+        learning_rate = self.params.base_lr * (1 - float(self.epoch) / self.params.num_epoch) ** self.params.power
         for param_group in self.opt.param_groups:
             param_group['lr'] = learning_rate
         print('Change learning rate into %f' % (learning_rate))

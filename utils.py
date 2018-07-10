@@ -42,7 +42,8 @@ def create_dataset(params):
     # if params.dataset_root is not None and not os.path.exists(params.dataset_root):
     #     raise ValueError('Dataset not exists!')
 
-    transform = {'train': transforms.Compose([Rescale(params.image_size),
+    transform = {'train': transforms.Compose([Rescale(params.rescale_size),
+                                              RandomCrop(params.image_size),
                                               RandomHorizontalFlip(),
                                               ToTensor()
                                               ]),
@@ -192,6 +193,44 @@ class RandomHorizontalFlip(object):
             label = cv2.flip(label, 1)
 
         return {'image': image, 'label': label}
+
+
+class RandomCrop(object):
+    """
+    Crop randomly the image in a sample.
+
+    :param output_size (tuple or int): Desired output size. If int, square crop
+            is made.
+    """
+
+    def __init__(self, output_size):
+        assert isinstance(output_size, (int, tuple))
+        if isinstance(output_size, int):
+            self.output_size = (output_size, output_size)
+        else:
+            assert len(output_size) == 2
+            self.output_size = output_size
+
+    def __call__(self, sample):
+        image, label = sample['image'], sample['label']
+
+        h, w = image.shape[:2]
+        new_h, new_w = self.output_size
+
+        top = np.random.randint(0, h - new_h)
+        left = np.random.randint(0, w - new_w)
+
+        image = image[top: top + new_h, left: left + new_w, :]
+
+        label = label[top: top + new_h, left: left + new_w]
+
+        return {'image': image, 'label': label}
+
+
+def print_config(params):
+    for name, value in sorted(vars(params).items()):
+        print('\t%-20s:%s' % (name, str(value)))
+    print('')
 
 
 if __name__ == '__main__':

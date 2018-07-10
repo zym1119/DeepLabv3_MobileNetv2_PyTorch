@@ -3,47 +3,49 @@ from utils import create_train_dir
 
 """ Dataset parameters """
 class Params():
-    # network structure parameters
-    model = 'MobileNetv2_DeepLabv3'
-    dataset = 'cityscapes'
-    s = [2, 1, 2, 2, 2, 1, 1]  # stride of each conv stage
-    t = [1, 1, 6, 6, 6, 6, 6]  # expansion factor t
-    n = [1, 1, 2, 3, 4, 3, 3]  # number of repeat time
-    c = [32, 16, 24, 32, 64, 96, 160]  # output channel of each conv stage
-    output_stride = 16
-    multi_grid = (1, 2, 4)
-    aspp = (6, 12, 18)
-    down_sample_rate = 32  # classic down sample rate
-
-    # dataset parameters
-    image_size = 512
-    num_class = 20  # 20 classes for training
-    dataset_root = '/path/to/your/dataset'
-    dataloader_workers = 8
-    shuffle = True
-    train_batch = 5
-    val_batch = 2
-    test_batch = 5
-
-    # train parameters
-    num_epoch = 50
-    base_lr = 0.001
-    power = 0.9
-    momentum = 0.9
-    dropout_prob = 0.2
-    weight_decay = 0.0005
-    should_val = True
-    val_every = 1
-    display = 1  # show train result every display epoch
-
-    # model restore parameters
-    resume_from = None  # None for train from scratch
-    pre_trained_from = None # None for train from scratch
-    should_save = True
-    save_every = 10
-
     def __init__(self):
+        # network structure parameters
+        self.model = 'MobileNetv2_DeepLabv3'
+        self.dataset = 'cityscapes'
+        self.s = [2, 1, 2, 2, 2, 1, 1]  # stride of each conv stage
+        self.t = [1, 1, 6, 6, 6, 6, 6]  # expansion factor t
+        self.n = [1, 1, 2, 3, 4, 3, 3]  # number of repeat time
+        self.c = [32, 16, 24, 32, 64, 96, 160]  # output channel of each conv stage
+        self.output_stride = 16
+        self.multi_grid = (1, 2, 4)
+        self.aspp = (6, 12, 18)
+        self.down_sample_rate = 32  # classic down sample rate
+
+        # dataset parameters
+        self.rescale_size = 600
+        self.image_size = 512
+        self.num_class = 20  # 20 classes for training
+        self.dataset_root = '/path/to/your/dataset'
+        self.dataloader_workers = 8
+        self.shuffle = True
+        self.train_batch = 10
+        self.val_batch = 2
+        self.test_batch = 5
+
+        # train parameters
+        self.num_epoch = 50
+        self.base_lr = 0.00025
+        self.power = 0.9
+        self.momentum = 0.9
+        self.weight_decay = 0.0005
+        self.should_val = True
+        self.val_every = 1
+        self.display = 1  # show train result every display epoch
+
+        # model restore parameters
+        self.resume_from = None  # None for train from scratch
+        self.pre_trained_from = None  # None for train from scratch
+        self.should_save = True
+        self.save_every = 10
+
         # create training dir
         self.summary_dir, self.ckpt_dir = create_train_dir(self)
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    aa = Params()
+    print(aa)

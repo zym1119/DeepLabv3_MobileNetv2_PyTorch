@@ -1,28 +1,38 @@
-from __future__ import print_function
 import os
 import argparse
 from utils import create_dataset
 from network import MobileNetv2_DeepLabv3
 from config import Params
-
+from utils import print_config
 
 def main():
-    # parser = argparse.ArgumentParser(description='MobileNet_v2_DeepLab_v3 Pytorch Implementation')
-    # parser.add_argument('--dataset', default='cityscapes', choices=['cityscapes', 'other'],
-    #                     help='Dataset used in training MobileNet v2+DeepLab v3')
-    # parser.add_argument('--root', default='./data/cityscapes', help='Path to your dataset')
-    #
-    # args = parser.parse_args()
+    # add argumentation
+    parser = argparse.ArgumentParser(description='MobileNet_v2_DeepLab_v3 Pytorch Implementation')
+    parser.add_argument('--dataset', default='cityscapes', choices=['cityscapes', 'other'],
+                        help='Dataset used in training MobileNet v2+DeepLab v3')
+    parser.add_argument('--root', default='./data/cityscapes', help='Path to your dataset')
+    parser.add_argument('--epoch', default=50, help='Total number of training epoch')
+    parser.add_argument('--lr', default=0.00025, help='Base learning rate')
+    parser.add_argument('--pretrain', default=None, help='Path to a pre-trained backbone model')
+    parser.add_argument('--resume_from', default=None, help='Path to a checkpoint to resume model')
+
+    args = parser.parse_args()
+    params = Params()
 
     # parse args
-    # if not os.path.exists(args.root):
-    #     print('ERROR: Root %s not exists!' % args.root)
-    #     exit(1)
+    if not os.path.exists(args.root):
+        if params.dataset_root is None:
+            raise ValueError('ERROR: Root %s not exists!' % args.root)
+    else:
+        params.dataset_root = args.root
+    params.num_epoch = args.epoch
+    params.base_lr = args.lr
+    params.pre_trained_from = args.pretrain
+    params.resume_from = args.resume_from
 
-    params = Params()
-    # params.dataset_root = args.root
-    params.dataset_root = '/media/ubuntu/disk/cityscapes'
-    """ TEST CODE """
+    print('Network parameters:')
+    print_config(params)
+
     # create dataset and transformation
     print('Creating Dataset and Transformation......')
     datasets = create_dataset(params)

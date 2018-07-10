@@ -21,9 +21,9 @@ class bar(object):
             self.iter_per_sec = 1/self.time
             perc = current_idx * total_length / max_idx
             # print progress bar
-            print '\r|'+'='*perc+'>'+' '*(total_length-1-perc)+'| %d/%d (%.2f iter/s)' % (current_idx+1,
+            print('\r|'+'='*perc+'>'+' '*(total_length-1-perc)+'| %d/%d (%.2f iter/s)' % (current_idx+1,
                                                                                           max_idx,
-                                                                                          self.iter_per_sec),
+                                                                                          self.iter_per_sec), end='')
             self.start_time = time.time()
 
     def close(self):

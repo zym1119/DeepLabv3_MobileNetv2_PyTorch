@@ -74,9 +74,9 @@ def get_inverted_residual_block_arr(in_, out_, t=6, s=1, n=1):
     return block
 
 
-class ASPP(nn.Module):
+class ASPP_plus(nn.Module):
     def __init__(self, params):
-        super(ASPP, self).__init__()
+        super(ASPP_plus, self).__init__()
         self.conv11 = nn.Sequential(nn.Conv2d(params.c[-1], 256, 1, bias=False),
                                      nn.BatchNorm2d(256))
         self.conv33_1 = nn.Sequential(nn.Conv2d(params.c[-1], 256, 3,
