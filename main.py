@@ -11,8 +11,8 @@ def main():
     parser.add_argument('--dataset', default='cityscapes', choices=['cityscapes', 'other'],
                         help='Dataset used in training MobileNet v2+DeepLab v3')
     parser.add_argument('--root', default='./data/cityscapes', help='Path to your dataset')
-    parser.add_argument('--epoch', default=50, help='Total number of training epoch')
-    parser.add_argument('--lr', default=0.00025, help='Base learning rate')
+    parser.add_argument('--epoch', default=None, help='Total number of training epoch')
+    parser.add_argument('--lr', default=None, help='Base learning rate')
     parser.add_argument('--pretrain', default=None, help='Path to a pre-trained backbone model')
     parser.add_argument('--resume_from', default=None, help='Path to a checkpoint to resume model')
 
@@ -25,10 +25,15 @@ def main():
             raise ValueError('ERROR: Root %s not exists!' % args.root)
     else:
         params.dataset_root = args.root
-    params.num_epoch = args.epoch
-    params.base_lr = args.lr
-    params.pre_trained_from = args.pretrain
-    params.resume_from = args.resume_from
+    params.dataset_root = '/media/ubuntu/disk/cityscapes/'
+    if args.epoch is not None:
+        params.num_epoch = args.epoch
+    if args.lr is not None:
+        params.base_lr = args.lr
+    if args.pretrain is not None:
+        params.pre_trained_from = args.pretrain
+    if args.resume_from is not None:
+        params.resume_from = args.resume_from
 
     print('Network parameters:')
     print_config(params)

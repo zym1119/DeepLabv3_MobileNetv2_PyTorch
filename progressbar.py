@@ -19,7 +19,7 @@ class bar(object):
         else:
             self.time = time.time()-self.start_time
             self.iter_per_sec = 1/self.time
-            perc = current_idx * total_length / max_idx
+            perc = current_idx * total_length // max_idx
             # print progress bar
             print('\r|'+'='*perc+'>'+' '*(total_length-1-perc)+'| %d/%d (%.2f iter/s)' % (current_idx+1,
                                                                                           max_idx,

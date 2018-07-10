@@ -88,7 +88,7 @@ class ASPP_plus(nn.Module):
         self.conv33_3 = nn.Sequential(nn.Conv2d(params.c[-1], 256, 3,
                                                 padding=params.aspp[2], dilation=params.aspp[2], bias=False),
                                       nn.BatchNorm2d(256))
-        self.concate_conv = nn.Sequential(nn.Conv2d(256*4+params.c[-1], 256, 1, bias=False),
+        self.concate_conv = nn.Sequential(nn.Conv2d(256*5, 256, 1, bias=False),
                                       nn.BatchNorm2d(256))
         # self.upsample = nn.Upsample(mode='bilinear', align_corners=True)
     def forward(self, x):
@@ -100,6 +100,7 @@ class ASPP_plus(nn.Module):
         # image pool and upsample
         image_pool = nn.AvgPool2d(kernel_size=x.size()[2:])
         image_pool = image_pool(x)
+        image_pool = self.conv11(image_pool)
         upsample = nn.Upsample(size=x.size()[2:], mode='bilinear', align_corners=True)
         upsample = upsample(image_pool)
 

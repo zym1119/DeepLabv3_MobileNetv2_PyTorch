@@ -21,14 +21,14 @@ class Params():
         self.image_size = 512
         self.num_class = 20  # 20 classes for training
         self.dataset_root = '/path/to/your/dataset'
-        self.dataloader_workers = 8
+        self.dataloader_workers = 12
         self.shuffle = True
         self.train_batch = 10
         self.val_batch = 2
         self.test_batch = 5
 
         # train parameters
-        self.num_epoch = 50
+        self.num_epoch = 100
         self.base_lr = 0.00025
         self.power = 0.9
         self.momentum = 0.9
