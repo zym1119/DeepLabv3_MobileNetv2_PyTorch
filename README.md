@@ -53,4 +53,17 @@ At last, run `python main.py --root /your/path/to/dataset/` or just run `python 
 
 After training, tensorboard is also available to observe training procedure using `tensorboard --logdir=./exp_dir/summaries`
 
+# Tips
+I have changed a little from origin MobileNetv2 and DeepLabv3 network, here are the changes:
+```
+1. The multi-grid blocks have the same structure with the 7-th layer in MobileNetv2 while 
+the rest layers of MobileNetv2 are discarded.
+2. The lr decay is determined by epoch not iterations as in DeepLab and the input image 
+is randomly cropped by 512 instead of 513 in DeepLab.
+```
+
 If you have some question, please leave an issue.
+
+# TO-DO
+1. add cityscapes visualization tools
+2. fine-tune training policy
