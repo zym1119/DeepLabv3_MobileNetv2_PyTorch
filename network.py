@@ -4,6 +4,8 @@ import os
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 import numpy as np
+import matplotlib.pyplot as plt
+
 import layers
 from progressbar import bar
 from cityscapes import logits2trainId, trainId2color
@@ -76,18 +78,6 @@ class MobileNetv2_DeepLabv3(nn.Module):
         # load data
         self.load_checkpoint()
         self.load_model()
-
-    def initialize(self):
-        """Initializes the model parameters"""
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                nn.init.xavier_normal_(m.weight)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-
 
     """######################"""
     """# Train and Validate #"""
@@ -180,7 +170,6 @@ class MobileNetv2_DeepLabv3(nn.Module):
         # out = torch.argmax(out, dim=1)
 
         # add to summary
-        # TODO: add label visualization function and add visualized output into summary
         self.summary_writer.add_scalar('val_loss', val_loss, self.epoch)
         # self.summary_writer.add_image('epoch_%d_val_img' % self.epoch, image[0, ...], self.epoch)
         # self.summary_writer.add_image('epoch_%d_val_gt' % self.epoch, label[0, ...], self.epoch)
@@ -218,7 +207,8 @@ class MobileNetv2_DeepLabv3(nn.Module):
         # save the last network state
         self.save_checkpoint()
 
-        # TODO: add train visualization
+        # train visualization
+        self.plot_curve()
 
     def Test(self):
         """
@@ -251,17 +241,6 @@ class MobileNetv2_DeepLabv3(nn.Module):
                 image_orig = image_orig.astype(np.uint8)
                 self.summary_writer.add_image('test_img_%d' % idx, image_orig, idx)
                 self.summary_writer.add_image('test_seg_%d' % idx, color_map, idx)
-
-    def adjust_lr(self):
-        """
-        Adjust learning rate at each epoch
-        """
-        learning_rate = self.params.base_lr * (1 - float(self.epoch) / self.params.num_epoch) ** self.params.power
-        for param_group in self.opt.param_groups:
-            param_group['lr'] = learning_rate
-        print('Change learning rate into %f' % (learning_rate))
-        self.summary_writer.add_scalar('learning_rate', learning_rate, self.epoch)
-
 
     """##########################"""
     """# Model Save and Restore #"""
@@ -305,6 +284,45 @@ class MobileNetv2_DeepLabv3(nn.Module):
                 WARNING('Pre-trained model do not exits. Start initializing......')
             else:
                 WARNING('Pre-trained model do not exits. Skipping......')
+
+    """#############"""
+    """# Utilities #"""
+    """#############"""
+
+    def initialize(self):
+        """Initializes the model parameters"""
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                nn.init.xavier_normal_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
+    def adjust_lr(self):
+        """
+        Adjust learning rate at each epoch
+        """
+        learning_rate = self.params.base_lr * (1 - float(self.epoch) / self.params.num_epoch) ** self.params.power
+        for param_group in self.opt.param_groups:
+            param_group['lr'] = learning_rate
+        print('Change learning rate into %f' % (learning_rate))
+        self.summary_writer.add_scalar('learning_rate', learning_rate, self.epoch)
+
+    def plot_curve(self):
+        """
+        Plot train/val loss curve
+        """
+        x = np.array(self.params.num_epoch, dtype=np.int)
+        plt.plot(x, self.train_loss, label='train_loss')
+        plt.plot(x, self.val_loss, label='val_loss')
+        plt.legend(loc='best')
+        plt.title('Train/Val loss')
+        plt.grid()
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.show()
 
 
 # """ TEST """

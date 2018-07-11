@@ -119,7 +119,6 @@ def trainId2color(dataset_root, id_map, name):
     :param id_map: torch tensor
     :param name: name of image, eg. 'gtFine/test/leverkusen/leverkusen_000027_000019_gtFine_labelTrainIds.png'
     """
-    # TODO: add name list in network and save color_map as required name
     # transform = {label.trainId: label.color for label in labels}
     assert len(id_map.shape) == 2, 'Id_map must be a 2-D tensor of shape (h, w) where h, w = H, W / output_stride'
     h, w = id_map.shape
