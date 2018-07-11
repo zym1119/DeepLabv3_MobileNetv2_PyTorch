@@ -46,6 +46,7 @@ dataset_root
     └───test
     └───val
 ```
+Don't worry about txt files if you don't have them, this program can generate unexist txt files automatically.
 
 Third, modify `config.py` to fit your own training policy or configuration
 

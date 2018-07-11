@@ -25,7 +25,7 @@ class Params():
         self.shuffle = True
         self.train_batch = 10
         self.val_batch = 2
-        self.test_batch = 5
+        self.test_batch = 1
 
         # train parameters
         self.num_epoch = 100

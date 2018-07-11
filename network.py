@@ -1,13 +1,14 @@
-from __future__ import print_function
 import torch
 import torch.nn as nn
 import os
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
+import numpy as np
 import layers
 from progressbar import bar
+from cityscapes import logits2trainId, trainId2color
 
-WARNING = lambda x: '\033[1;31;2mWARNING: ' + x + '\033[0m'
+WARNING = lambda x: print('\033[1;31;2mWARNING: ' + x + '\033[0m')
 
 # create model
 class MobileNetv2_DeepLabv3(nn.Module):
@@ -223,7 +224,7 @@ class MobileNetv2_DeepLabv3(nn.Module):
         """
         Test network on test set
         """
-
+        print('Testing:')
         # set mode eval
         self.network.eval()
         test_loader = DataLoader(self.datasets['test'],
@@ -237,14 +238,19 @@ class MobileNetv2_DeepLabv3(nn.Module):
 
         for batch_idx, batch in enumerate(test_loader):
             self.pb.click(batch_idx, total_batch)
-            image, label = batch
+            image, label, name = batch['image'], batch['label'], batch['label_name']
             image_cuda, label_cuda = image.cuda(), label.cuda()
             out = self.network(image_cuda)
 
             for i in range(self.params.test_batch):
                 idx = batch_idx*self.params.test_batch+i
-                self.summary_writer.add_image('test_img_%d' % idx, image[i, ...])
-                self.summary_writer.add_image('test_out_%d' % idx, out[i, ...])
+                id_map = logits2trainId(out[i, ...])
+                color_map = trainId2color(self.params.dataset_root, id_map, name=name[i])
+                image_orig = image[i].numpy().transpose(1, 2, 0)
+                image_orig = image_orig*255
+                image_orig = image_orig.astype(np.uint8)
+                self.summary_writer.add_image('test_img_%d' % idx, image_orig, idx)
+                self.summary_writer.add_image('test_seg_%d' % idx, color_map, idx)
 
     def adjust_lr(self):
         """
@@ -278,9 +284,9 @@ class MobileNetv2_DeepLabv3(nn.Module):
                 print('Checkpoint Loaded!')
                 print('Current Epoch: %d' % self.epoch)
             except:
-                print(WARNING('Cannot load checkpoint from %s. Skipping......' % self.params.resume_from))
+                WARNING('Cannot load checkpoint from %s. Start loading pre-trained model......' % self.params.resume_from)
         else:
-            print(WARNING('Checkpoint do not exists. Skipping......'))
+            WARNING('Checkpoint do not exists. Start loading pre-trained model......')
 
     def load_model(self):
         if self.params.pre_trained_from is not None and os.path.exists(self.params.pre_trained_from):
@@ -290,9 +296,15 @@ class MobileNetv2_DeepLabv3(nn.Module):
                 self.network.load_state_dict(pretrain)
                 print('Pre-trained Model Loaded!')
             except:
-                print(WARNING('Cannot load pre-trained model. Start initializing......'))
+                if self.params.resume_from is None or not os.path.exists(self.params.resume_from):
+                    WARNING('Cannot load pre-trained model. Start initializing......')
+                else:
+                    WARNING('Cannot load pre-trained model. Skipping......')
         else:
-            print(WARNING('Pre-trained model do not exits. Start initializing......'))
+            if self.params.resume_from is None or not os.path.exists(self.params.resume_from):
+                WARNING('Pre-trained model do not exits. Start initializing......')
+            else:
+                WARNING('Pre-trained model do not exits. Skipping......')
 
 
 # """ TEST """

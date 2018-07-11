@@ -25,7 +25,6 @@ def main():
             raise ValueError('ERROR: Root %s not exists!' % args.root)
     else:
         params.dataset_root = args.root
-    params.dataset_root = '/media/ubuntu/disk/cityscapes/'
     if args.epoch is not None:
         params.num_epoch = args.epoch
     if args.lr is not None:
@@ -46,10 +45,11 @@ def main():
     # create model
     print('Initializing MobileNet and DeepLab......')
     net = MobileNetv2_DeepLabv3(params, datasets)
-    print('Initialization Succeed.\n')
+    print('Model Built.\n')
 
     # let's start to train!
-    net.Train()
+    # net.Train()
+    net.Test()
 
 if __name__ == '__main__':
     main()

@@ -50,8 +50,7 @@ def create_dataset(params):
                  'val'  : transforms.Compose([Rescale(params.image_size),
                                               ToTensor()
                                               ]),
-                 'test' : transforms.Compose([Rescale(params.image_size),
-                                              ToTensor()
+                 'test' : transforms.Compose([ToTensor()
                                               ])}
 
     # file_dir = {p: os.path.join(params.dataset_root, p) for p in phase}
@@ -72,18 +71,21 @@ class Cityscapes(Dataset):
         """
         self.dataset = dataset_dir
         self.transforms = transforms
-        require_file = ['trainImages.txt', 'valImages.txt', 'trainLabels.txt', 'valLabels.txt']
+        require_file = ['trainImages.txt', 'trainLabels.txt',
+                        'valImages.txt',   'valLabels.txt',
+                        'testImages.txt',  'testLabels.txt']
 
         # check requirement
         if mode not in ['train', 'test', 'val']:
             raise ValueError('Unsupported mode %s' % mode)
 
         if not os.path.exists(self.dataset):
-            raise ValueError('Dataset not exists!')
+            raise ValueError('Dataset not exists at %s' % self.dataset)
 
         for file in require_file:
             if file not in os.listdir(self.dataset):
-                raise ValueError('Cannot find file %s in dataset root folder!' % file)
+                # raise ValueError('Cannot find file %s in dataset root folder!' % file)
+                generate_txt(self.dataset, file)
 
         # create image and label list
         self.image_list = []
@@ -99,10 +101,10 @@ class Cityscapes(Dataset):
             for line in open(os.path.join(self.dataset, 'valLabels.txt')):
                 self.label_list.append(line.strip())
         else:
-            test_dir = os.path.join(self.dataset, 'leftImg8bit/val')
-            cities = os.listdir(test_dir)
-            for city in cities:
-                self.image_list.extend(os.listdir(os.path.join(test_dir, city)))
+            for line in open(os.path.join(self.dataset, 'testImages.txt')):
+                self.image_list.append(line.strip())
+            for line in open(os.path.join(self.dataset, 'testLabels.txt')):
+                self.label_list.append(line.strip())
 
     def __len__(self):
         return len(self.image_list)
@@ -113,9 +115,12 @@ class Cityscapes(Dataset):
         tips: 3 channels of label image are the same
         """
         image = cv2.imread(os.path.join(self.dataset, self.image_list[index]))
-        label = cv2.imread(os.path.join(self.dataset, self.label_list[index]))
+        label = cv2.imread(os.path.join(self.dataset, self.label_list[index]))  # label.size (1024, 2048, 3)
+        image_name = self.image_list[index]
+        label_name = self.label_list[index]
 
-        sample = {'image': image, 'label': label[:, :, 0]}  # label.size (1024, 2048, 3)
+        sample = {'image': image, 'label': label[:, :, 0],
+                  'image_name': image_name, 'label_name': label_name}
 
         if self.transforms:
             sample = self.transforms(sample)
@@ -148,10 +153,12 @@ class Rescale(object):
 
         new_h, new_w = int(new_h), int(new_w)
 
-        img = cv2.resize(image, (new_w, new_h))
+        image = cv2.resize(image, (new_w, new_h))
         label = cv2.resize(label, (new_w, new_h), interpolation=cv2.INTER_NEAREST)
 
-        return {'image': img, 'label': label}
+        sample['image'], sample['label'] = image, label
+
+        return sample
 
 
 class ToTensor(object):
@@ -168,18 +175,17 @@ class ToTensor(object):
         # torch image: C X H X W
         image = image.transpose((2, 0, 1)).astype(np.float32)
 
-        # reset label shape and set 255 into -1
+        # reset label shape
         w, h = label.shape[0]//self.output_stride, label.shape[1]//self.output_stride
         label = cv2.resize(label, (h, w), interpolation=cv2.INTER_NEAREST).astype(np.int64)
         # label[label == 255] = 19
 
-        # min-max normalize image
-        immax = np.max(image)
-        immin = np.min(image)
-        image = (image-immin)/(immax-immin)
+        # normalize image
+        image /= 255
 
-        return {'image': torch.from_numpy(image),
-                'label': torch.from_numpy(label)}
+        sample['image'], sample['label'] = torch.from_numpy(image), torch.from_numpy(label)
+
+        return sample
 
 
 class RandomHorizontalFlip(object):
@@ -192,7 +198,9 @@ class RandomHorizontalFlip(object):
             image = cv2.flip(image, 1)
             label = cv2.flip(label, 1)
 
-        return {'image': image, 'label': label}
+        sample['image'], sample['label'] = image, label
+
+        return sample
 
 
 class RandomCrop(object):
@@ -224,13 +232,54 @@ class RandomCrop(object):
 
         label = label[top: top + new_h, left: left + new_w]
 
-        return {'image': image, 'label': label}
+        sample['image'], sample['label'] = image, label
+
+        return sample
 
 
 def print_config(params):
     for name, value in sorted(vars(params).items()):
         print('\t%-20s:%s' % (name, str(value)))
     print('')
+
+
+def generate_txt(dataset_root, file):
+    """
+    Generate txt files that not exists but required
+    :param dataset_root: the path to dataset root, eg. '/media/ubuntu/disk/cityscapes'
+    :param file: txt file need to generate
+    """
+    with open(os.path.join(dataset_root, file), 'w') as f:
+        # get mode and folder
+        if 'train' in file:
+            mode = 'train'
+        elif 'test' in file:
+            mode = 'test'
+        else:
+            mode = 'val'
+        folder = 'leftImg8bit' if 'Image' in file else 'gtFine'
+
+        path = os.path.join(os.path.join(dataset_root, folder), mode)
+
+        assert os.path.exists(path), 'Cannot find %s set in folder %s' % (mode, folder)
+
+        # collect images or labels
+        if 'Images' in file:
+            cities = os.listdir(path)
+            for city in cities:
+                # write them into txt
+                for image in os.listdir(os.path.join(path, city)):
+                    print(folder + '/' + mode + '/' + city + '/' + image, file=f)
+        else:
+            image_txt = mode+'Images.txt'
+            if image_txt in os.listdir(dataset_root):
+                for line in open(os.path.join(dataset_root, image_txt)):
+                    line = line.strip()
+                    line = line.replace('leftImg8bit/', 'gtFine/')
+                    line = line.replace('_leftImg8bit', '_gtFine_labelTrainIds')
+                    print(line, file=f)
+            else:
+                generate_txt(dataset_root, image_txt)
 
 
 if __name__ == '__main__':
