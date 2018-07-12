@@ -37,7 +37,7 @@ dataset_root
 |   |   └───aachen(city)
 |   |   └───bochum
 |   |   └───...
-|   |   
+|   |
 |   └───test(test set)
 |   └───val(val set)
 |
@@ -61,6 +61,7 @@ I have changed a little from origin MobileNetv2 and DeepLabv3 network, here are 
 the rest layers of MobileNetv2 are discarded.
 2. The lr decay is determined by epoch not iterations as in DeepLab and the input image 
 is randomly cropped by 512 instead of 513 in DeepLab.
+3. During training, a input image is first resized so that the shorter side is 600 pixel, then cropped into 512 pixels square and sent into network.
 ```
 
 If you have some question, please leave an issue.
@@ -68,3 +69,8 @@ If you have some question, please leave an issue.
 # TO-DO
 1. add cityscapes visualization tools
 2. fine-tune training policy
+
+# Logs
+| 7.11 | fix bugs in network.Test(), add cityscapes output visualization function |
+|------|-------------------------------------------------------------------|
+| 7.12 | fix bugs in network.plot_curve(), add checkpoint split to avoid out of memory, add save loss in network.save_checkpoint() |
