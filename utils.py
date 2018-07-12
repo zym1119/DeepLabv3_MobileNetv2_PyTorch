@@ -176,9 +176,10 @@ class ToTensor(object):
         image = image.transpose((2, 0, 1)).astype(np.float32)
 
         # reset label shape
-        w, h = label.shape[0]//self.output_stride, label.shape[1]//self.output_stride
-        label = cv2.resize(label, (h, w), interpolation=cv2.INTER_NEAREST).astype(np.int64)
+        # w, h = label.shape[0]//self.output_stride, label.shape[1]//self.output_stride
+        # label = cv2.resize(label, (h, w), interpolation=cv2.INTER_NEAREST).astype(np.int64)
         # label[label == 255] = 19
+        label = label.astype(np.int64)
 
         # normalize image
         image /= 255

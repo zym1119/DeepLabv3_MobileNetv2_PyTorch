@@ -5,12 +5,14 @@ from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 import numpy as np
 import matplotlib.pyplot as plt
+from torch.utils.checkpoint import checkpoint_sequential
 
 import layers
 from progressbar import bar
 from cityscapes import logits2trainId, trainId2color
 
 WARNING = lambda x: print('\033[1;31;2mWARNING: ' + x + '\033[0m')
+LOG = lambda x: print('\033[0;31;2m' + x + '\033[0m')
 
 # create model
 class MobileNetv2_DeepLabv3(nn.Module):
@@ -29,6 +31,8 @@ class MobileNetv2_DeepLabv3(nn.Module):
         self.datasets = datasets
         self.pb = bar()  # hand-made progressbar
         self.epoch = 0
+        self.init_epoch = 0
+        self.ckpt_flag = False
         self.train_loss = []
         self.val_loss = []
         self.summary_writer = SummaryWriter(log_dir=self.params.summary_dir)
@@ -48,8 +52,11 @@ class MobileNetv2_DeepLabv3(nn.Module):
                                                                 t=self.params.t[i+1], s=self.params.s[i+1],
                                                                 n=self.params.n[i+1]))
 
-        # dilated conv layer 1-3
+        # dilated conv layer 1-4
+        # first dilation=rate, follows dilation=multi_grid*rate
         rate = self.params.down_sample_rate // self.params.output_stride
+        block.append(layers.InvertedResidual(self.params.c[6], self.params.c[6],
+                                             t=self.params.t[6], s=1, dilation=rate))
         for i in range(3):
             block.append(layers.InvertedResidual(self.params.c[6], self.params.c[6],
                                                  t=self.params.t[6], s=1, dilation=rate*self.params.multi_grid[i]))
@@ -59,6 +66,9 @@ class MobileNetv2_DeepLabv3(nn.Module):
 
         # final conv layer
         block.append(nn.Conv2d(256, self.params.num_class, 1))
+
+        # bilinear upsample
+        block.append(nn.Upsample(scale_factor=self.params.output_stride, mode='bilinear', align_corners=False))
 
         self.network = nn.Sequential(*block).cuda()
         # print(self.network)
@@ -109,7 +119,13 @@ class MobileNetv2_DeepLabv3(nn.Module):
             self.pb.click(batch_idx, total_batch)
             image, label = batch['image'], batch['label']
             image_cuda, label_cuda = image.cuda(), label.cuda()
-            out = self.network(image_cuda)
+
+            # checkpoint split
+            if self.params.should_split:
+                image_cuda.requires_grad_()
+                out = checkpoint_sequential(self.network, self.params.split, image_cuda)
+            else:
+                out = self.network(image_cuda)
             loss = self.loss_fn(out, label_cuda)
 
             # optimize
@@ -119,6 +135,11 @@ class MobileNetv2_DeepLabv3(nn.Module):
 
             # accumulate
             train_loss += loss.item()
+
+            # record first loss
+            if self.train_loss == []:
+                self.train_loss.append(train_loss)
+                self.summary_writer.add_scalar('train_loss', train_loss, 0)
 
         self.pb.close()
         train_loss /= total_batch
@@ -155,31 +176,38 @@ class MobileNetv2_DeepLabv3(nn.Module):
             self.pb.click(batch_idx, total_batch)
             image, label = batch['image'], batch['label']
             image_cuda, label_cuda = image.cuda(), label.cuda()
-            out = self.network(image_cuda)
+
+            # checkpoint split
+            if self.params.should_split:
+                image_cuda.requires_grad_()
+                out = checkpoint_sequential(self.network, self.params.split, image_cuda)
+            else:
+                out = self.network(image_cuda)
+
             loss = self.loss_fn(out, label_cuda)
 
             val_loss += loss.item()
+
+            # record first loss
+            if self.val_loss == []:
+                self.val_loss.append(val_loss)
+                self.summary_writer.add_scalar('val_loss', val_loss, 0)
 
         self.pb.close()
         val_loss /= total_batch
         self.val_loss.append(val_loss)
 
-        # softmax out
-        # softmax = nn.Softmax(dim=1)
-        # out = softmax(out)
-        # out = torch.argmax(out, dim=1)
-
         # add to summary
         self.summary_writer.add_scalar('val_loss', val_loss, self.epoch)
-        # self.summary_writer.add_image('epoch_%d_val_img' % self.epoch, image[0, ...], self.epoch)
-        # self.summary_writer.add_image('epoch_%d_val_gt' % self.epoch, label[0, ...], self.epoch)
-        # self.summary_writer.add_image('epoch_%d_val_seg' % self.epoch, out[0, ...], self.epoch)
+
 
     def Train(self):
         """
         Train network in n epochs, n is defined in params.num_epoch
         """
-        for _ in range(self.params.num_epoch):
+        self.init_epoch = self.epoch
+        assert self.epoch <= self.params.num_epoch, 'Current epoch should not be larger than num_epoch'
+        for _ in range(self.epoch, self.params.num_epoch):
             self.epoch += 1
             print('-' * 20 + 'Epoch.' + str(self.epoch) + '-' * 20)
 
@@ -205,7 +233,8 @@ class MobileNetv2_DeepLabv3(nn.Module):
             self.adjust_lr()
 
         # save the last network state
-        self.save_checkpoint()
+        if self.params.should_save:
+            self.save_checkpoint()
 
         # train visualization
         self.plot_curve()
@@ -216,7 +245,10 @@ class MobileNetv2_DeepLabv3(nn.Module):
         """
         print('Testing:')
         # set mode eval
+        torch.cuda.empty_cache()
         self.network.eval()
+
+        # prepare test data
         test_loader = DataLoader(self.datasets['test'],
                                  batch_size=self.params.test_batch,
                                  shuffle=False, num_workers=self.params.dataloader_workers)
@@ -226,11 +258,16 @@ class MobileNetv2_DeepLabv3(nn.Module):
         else:
             total_batch = test_size // self.params.test_batch
 
+        # test for one epoch
         for batch_idx, batch in enumerate(test_loader):
             self.pb.click(batch_idx, total_batch)
             image, label, name = batch['image'], batch['label'], batch['label_name']
             image_cuda, label_cuda = image.cuda(), label.cuda()
-            out = self.network(image_cuda)
+            if self.params.should_split:
+                image_cuda.requires_grad_()
+                out = checkpoint_sequential(self.network, self.params.split, image_cuda)
+            else:
+                out = self.network(image_cuda)
 
             for i in range(self.params.test_batch):
                 idx = batch_idx*self.params.test_batch+i
@@ -239,58 +276,74 @@ class MobileNetv2_DeepLabv3(nn.Module):
                 image_orig = image[i].numpy().transpose(1, 2, 0)
                 image_orig = image_orig*255
                 image_orig = image_orig.astype(np.uint8)
-                self.summary_writer.add_image('test_img_%d' % idx, image_orig, idx)
-                self.summary_writer.add_image('test_seg_%d' % idx, color_map, idx)
+                self.summary_writer.add_image('img_%d/orig' % idx, image_orig, idx)
+                self.summary_writer.add_image('img_%d/seg' % idx, color_map, idx)
 
     """##########################"""
     """# Model Save and Restore #"""
     """##########################"""
 
     def save_checkpoint(self):
-        save_dict = {'epoch': self.epoch,
-                     'state_dict': self.network.state_dict(),
-                     'optimizer': self.opt.state_dict()}
+        save_dict = {'epoch'        :  self.epoch,
+                     'train_loss'   :  self.train_loss,
+                     'val_loss'     :  self.val_loss,
+                     'state_dict'   :  self.network.state_dict(),
+                     'optimizer'    :  self.opt.state_dict()}
         torch.save(save_dict, self.params.ckpt_dir+'Checkpoint_epoch_%d.pth.tar' % self.epoch)
+        print('Checkpoint saved')
 
     def load_checkpoint(self):
+        """
+        Load checkpoint from given path
+        """
         if self.params.resume_from is not None and os.path.exists(self.params.resume_from):
             try:
-                print('Loading Checkpoint at %s' % self.params.resume_from)
+                LOG('Loading Checkpoint at %s' % self.params.resume_from)
                 ckpt = torch.load(self.params.resume_from)
                 self.epoch = ckpt['epoch']
+                try:
+                    self.train_loss = ckpt['train_loss']
+                    self.val_loss = ckpt['val_loss']
+                except:
+                    self.train_loss = []
+                    self.val_loss = []
                 self.network.load_state_dict(ckpt['state_dict'])
                 self.opt.load_state_dict(ckpt['optimizer'])
-                print('Checkpoint Loaded!')
-                print('Current Epoch: %d' % self.epoch)
+                LOG('Checkpoint Loaded!')
+                LOG('Current Epoch: %d' % self.epoch)
+                self.ckpt_flag = True
             except:
                 WARNING('Cannot load checkpoint from %s. Start loading pre-trained model......' % self.params.resume_from)
         else:
             WARNING('Checkpoint do not exists. Start loading pre-trained model......')
 
     def load_model(self):
-        if self.params.pre_trained_from is not None and os.path.exists(self.params.pre_trained_from):
-            try:
-                print('Loading Pre-trained Model at %s' % self.params.pre_trained_from)
-                pretrain = torch.load(self.params.pre_trained_from)
-                self.network.load_state_dict(pretrain)
-                print('Pre-trained Model Loaded!')
-            except:
-                if self.params.resume_from is None or not os.path.exists(self.params.resume_from):
-                    WARNING('Cannot load pre-trained model. Start initializing......')
-                else:
-                    WARNING('Cannot load pre-trained model. Skipping......')
+        """
+        Load ImageNet pre-trained model into MobileNetv2 backbone, only happen when
+            no checkpoint is loaded
+        """
+        if self.ckpt_flag:
+            LOG('Skip Loading Pre-trained Model......')
         else:
-            if self.params.resume_from is None or not os.path.exists(self.params.resume_from):
-                WARNING('Pre-trained model do not exits. Start initializing......')
+            if self.params.pre_trained_from is not None and os.path.exists(self.params.pre_trained_from):
+                try:
+                    LOG('Loading Pre-trained Model at %s' % self.params.pre_trained_from)
+                    pretrain = torch.load(self.params.pre_trained_from)
+                    self.network.load_state_dict(pretrain)
+                    LOG('Pre-trained Model Loaded!')
+                except:
+                    WARNING('Cannot load pre-trained model. Start training......')
             else:
-                WARNING('Pre-trained model do not exits. Skipping......')
+                WARNING('Pre-trained model do not exits. Start training......')
 
     """#############"""
     """# Utilities #"""
     """#############"""
 
     def initialize(self):
-        """Initializes the model parameters"""
+        """
+        Initializes the model parameters
+        """
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
                 nn.init.xavier_normal_(m.weight)
@@ -314,7 +367,7 @@ class MobileNetv2_DeepLabv3(nn.Module):
         """
         Plot train/val loss curve
         """
-        x = np.array(self.params.num_epoch, dtype=np.int)
+        x = np.arange(self.init_epoch, self.params.num_epoch+1, dtype=np.int).tolist()
         plt.plot(x, self.train_loss, label='train_loss')
         plt.plot(x, self.val_loss, label='val_loss')
         plt.legend(loc='best')

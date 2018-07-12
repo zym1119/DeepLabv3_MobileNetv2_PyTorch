@@ -5,6 +5,10 @@ from network import MobileNetv2_DeepLabv3
 from config import Params
 from utils import print_config
 
+
+LOG = lambda x: print('\033[0;31;2m' + x + '\033[0m')
+
+
 def main():
     # add argumentation
     parser = argparse.ArgumentParser(description='MobileNet_v2_DeepLab_v3 Pytorch Implementation')
@@ -34,18 +38,18 @@ def main():
     if args.resume_from is not None:
         params.resume_from = args.resume_from
 
-    print('Network parameters:')
+    LOG('Network parameters:')
     print_config(params)
 
     # create dataset and transformation
-    print('Creating Dataset and Transformation......')
+    LOG('Creating Dataset and Transformation......')
     datasets = create_dataset(params)
-    print('Creation Succeed.\n')
+    LOG('Creation Succeed.\n')
 
     # create model
-    print('Initializing MobileNet and DeepLab......')
+    LOG('Initializing MobileNet and DeepLab......')
     net = MobileNetv2_DeepLabv3(params, datasets)
-    print('Model Built.\n')
+    LOG('Model Built.\n')
 
     # let's start to train!
     # net.Train()
