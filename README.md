@@ -9,6 +9,10 @@ And the segment head of DeepLabv3 comes from paper:
 
 Please refer to these papers about details like Atrous Convolution, Inverted Residuals, Depthwise Convolution or ASPP if you have some confusion about these blocks.
 
+# Results
+After training for 150 epochs, the result on test set is like:
+![img](https://github.com/zym1119/DeepLabv3_MobileNetv2_PyTorch/blob/master/img/Screenshot%20from%202018-07-13%2010-45-35.png)
+
 # How to use?
 First you need to install dependencies of this implementation.
 This implementation is written under Python 3.5 with following libs:
@@ -76,3 +80,4 @@ If you have some question, please leave an issue.
 |------|----------------------------|
 | 7.11 | fix bugs in network.Test(), add cityscapes output visualization function |
 | 7.12 | fix bugs in network.plot_curve(), add checkpoint split to avoid out of memory, add save loss in network.save_checkpoint() |
+| 7.13 | fix bugs in figure save, add checkpoint@150epoch |
