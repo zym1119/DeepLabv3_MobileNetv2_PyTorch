@@ -29,12 +29,12 @@ class Params():
 
         # train parameters
         self.num_epoch = 150
-        self.base_lr = 0.00025
+        self.base_lr = 0.0002
         self.power = 0.9
         self.momentum = 0.9
         self.weight_decay = 0.0005
         self.should_val = True
-        self.val_every = 1
+        self.val_every = 2
         self.display = 1  # show train result every display epoch
         self.should_split = True  # should split training procedure into several parts
         self.split = 2  # number of split

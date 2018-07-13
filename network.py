@@ -206,38 +206,40 @@ class MobileNetv2_DeepLabv3(nn.Module):
         Train network in n epochs, n is defined in params.num_epoch
         """
         self.init_epoch = self.epoch
-        assert self.epoch <= self.params.num_epoch, 'Current epoch should not be larger than num_epoch'
-        for _ in range(self.epoch, self.params.num_epoch):
-            self.epoch += 1
-            print('-' * 20 + 'Epoch.' + str(self.epoch) + '-' * 20)
+        if self.epoch >= self.params.num_epoch:
+            WARNING('Num_epoch should be smaller than current epoch. Skip training......\n')
+        else:
+            for _ in range(self.epoch, self.params.num_epoch):
+                self.epoch += 1
+                print('-' * 20 + 'Epoch.' + str(self.epoch) + '-' * 20)
 
-            # train one epoch
-            self.train_one_epoch()
+                # train one epoch
+                self.train_one_epoch()
 
-            # should display
-            if self.epoch % self.params.display == 0:
-                print('\tTrain loss: %.4f' % self.train_loss[-1])
+                # should display
+                if self.epoch % self.params.display == 0:
+                    print('\tTrain loss: %.4f' % self.train_loss[-1])
 
-            # should save
+                # should save
+                if self.params.should_save:
+                    if self.epoch % self.params.save_every == 0:
+                        self.save_checkpoint()
+
+                # test every params.test_every epoch
+                if self.params.should_val:
+                    if self.epoch % self.params.val_every == 0:
+                        self.val_one_epoch()
+                        print('\tVal loss: %.4f' % self.val_loss[-1])
+
+                # adjust learning rate
+                self.adjust_lr()
+
+            # save the last network state
             if self.params.should_save:
-                if self.epoch % self.params.save_every == 0:
-                    self.save_checkpoint()
+                self.save_checkpoint()
 
-            # test every params.test_every epoch
-            if self.params.should_val:
-                if self.epoch % self.params.val_every == 0:
-                    self.val_one_epoch()
-                    print('\tVal loss: %.4f' % self.val_loss[-1])
-
-            # adjust learning rate
-            self.adjust_lr()
-
-        # save the last network state
-        if self.params.should_save:
-            self.save_checkpoint()
-
-        # train visualization
-        self.plot_curve()
+            # train visualization
+            self.plot_curve()
 
     def Test(self):
         """
@@ -276,8 +278,8 @@ class MobileNetv2_DeepLabv3(nn.Module):
                 image_orig = image[i].numpy().transpose(1, 2, 0)
                 image_orig = image_orig*255
                 image_orig = image_orig.astype(np.uint8)
-                self.summary_writer.add_image('img_%d/orig' % idx, image_orig, idx)
-                self.summary_writer.add_image('img_%d/seg' % idx, color_map, idx)
+                self.summary_writer.add_image('test/img_%d/orig' % idx, image_orig, idx)
+                self.summary_writer.add_image('test/img_%d/seg' % idx, color_map, idx)
 
     """##########################"""
     """# Model Save and Restore #"""
@@ -367,9 +369,11 @@ class MobileNetv2_DeepLabv3(nn.Module):
         """
         Plot train/val loss curve
         """
-        x = np.arange(self.init_epoch, self.params.num_epoch+1, dtype=np.int).tolist()
-        plt.plot(x, self.train_loss, label='train_loss')
-        plt.plot(x, self.val_loss, label='val_loss')
+        x1 = np.arange(self.init_epoch, self.params.num_epoch+1, dtype=np.int).tolist()
+        x2 = np.linspace(self.init_epoch, self.epoch,
+                         num=(self.epoch-self.init_epoch)//self.params.val_every+1, dtype=np.int64)
+        plt.plot(x1, self.train_loss, label='train_loss')
+        plt.plot(x2, self.val_loss, label='val_loss')
         plt.legend(loc='best')
         plt.title('Train/Val loss')
         plt.grid()

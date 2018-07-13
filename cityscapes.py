@@ -129,12 +129,8 @@ def trainId2color(dataset_root, id_map, name):
             color_map[id_map == label.trainId] = np.array(label.color)
     color_map = color_map.astype(np.uint8)
 
-    # plot
-    plt.imshow(color_map)
-    # plt.show()
-
     # save
-    plt.savefig(dataset_root + '/' + name)
+    cv2.imwrite(dataset_root + '/' + name, color_map)
 
     return color_map
 

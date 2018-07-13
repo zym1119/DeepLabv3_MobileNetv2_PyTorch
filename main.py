@@ -52,7 +52,7 @@ def main():
     LOG('Model Built.\n')
 
     # let's start to train!
-    # net.Train()
+    net.Train()
     net.Test()
 
 if __name__ == '__main__':
