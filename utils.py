@@ -5,6 +5,7 @@ import torch
 from torchvision import transforms
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
+import zipfile
 
 
 def calc_dataset_stats(dataset, axis=0, ep=1e-7):
@@ -50,7 +51,8 @@ def create_dataset(params):
                  'val'  : transforms.Compose([Rescale(params.image_size),
                                               ToTensor()
                                               ]),
-                 'test' : transforms.Compose([ToTensor()
+                 'test' : transforms.Compose([Rescale(params.image_size),
+                                              ToTensor()
                                               ])}
 
     # file_dir = {p: os.path.join(params.dataset_root, p) for p in phase}
@@ -283,17 +285,30 @@ def generate_txt(dataset_root, file):
                 generate_txt(dataset_root, image_txt)
 
 
+def generate_zip(dataset_root):
+    azip = zipfile.ZipFile('submit.zip', 'w')
+    txt = os.path.join(dataset_root, 'testLabels.txt')
+    if os.path.exists(txt):
+        for line in open(txt):
+            line = line.strip()
+            line = line.replace('labelTrainIds', 'labelIds')
+            azip.write(os.path.join(dataset_root, line), arcname=line)
+        azip.close()
+    else:
+        generate_txt(dataset_root, 'testLabels.txt')
+
+
 if __name__ == '__main__':
     dir = '/media/ubuntu/disk/cityscapes'
-    dataset = Cityscapes(dir)
-    loader = DataLoader(dataset,
-                        batch_size=10,
-                        shuffle=True,
-                        num_workers=8)
-    for idx, batch in enumerate(loader):
-        img = batch['image']
-        lb = batch['label']
-        print(idx, img.shape)
-
+    # dataset = Cityscapes(dir)
+    # loader = DataLoader(dataset,
+    #                     batch_size=10,
+    #                     shuffle=True,
+    #                     num_workers=8)
+    # for idx, batch in enumerate(loader):
+    #     img = batch['image']
+    #     lb = batch['label']
+    #     print(idx, img.shape)
+    generate_zip(dir)
     # tips: the last batch may not be as big as batch_size
 

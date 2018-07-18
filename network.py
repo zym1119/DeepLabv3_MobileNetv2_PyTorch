@@ -9,7 +9,7 @@ from torch.utils.checkpoint import checkpoint_sequential
 
 import layers
 from progressbar import bar
-from cityscapes import logits2trainId, trainId2color
+from cityscapes import logits2trainId, trainId2color, trainId2LabelId
 
 WARNING = lambda x: print('\033[1;31;2mWARNING: ' + x + '\033[0m')
 LOG = lambda x: print('\033[0;31;2m' + x + '\033[0m')
@@ -139,14 +139,14 @@ class MobileNetv2_DeepLabv3(nn.Module):
             # record first loss
             if self.train_loss == []:
                 self.train_loss.append(train_loss)
-                self.summary_writer.add_scalar('train_loss', train_loss, 0)
+                self.summary_writer.add_scalar('loss/train_loss', train_loss, 0)
 
         self.pb.close()
         train_loss /= total_batch
         self.train_loss.append(train_loss)
 
         # add to summary
-        self.summary_writer.add_scalar('train_loss', train_loss, self.epoch)
+        self.summary_writer.add_scalar('loss/train_loss', train_loss, self.epoch)
 
     def val_one_epoch(self):
         """
@@ -191,14 +191,14 @@ class MobileNetv2_DeepLabv3(nn.Module):
             # record first loss
             if self.val_loss == []:
                 self.val_loss.append(val_loss)
-                self.summary_writer.add_scalar('val_loss', val_loss, 0)
+                self.summary_writer.add_scalar('loss/val_loss', val_loss, 0)
 
         self.pb.close()
         val_loss /= total_batch
         self.val_loss.append(val_loss)
 
         # add to summary
-        self.summary_writer.add_scalar('val_loss', val_loss, self.epoch)
+        self.summary_writer.add_scalar('loss/val_loss', val_loss, self.epoch)
 
 
     def Train(self):
@@ -275,6 +275,7 @@ class MobileNetv2_DeepLabv3(nn.Module):
                 idx = batch_idx*self.params.test_batch+i
                 id_map = logits2trainId(out[i, ...])
                 color_map = trainId2color(self.params.dataset_root, id_map, name=name[i])
+                trainId2LabelId(self.params.dataset_root, id_map, name=name[i])
                 image_orig = image[i].numpy().transpose(1, 2, 0)
                 image_orig = image_orig*255
                 image_orig = image_orig.astype(np.uint8)

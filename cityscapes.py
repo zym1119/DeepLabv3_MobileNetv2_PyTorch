@@ -107,6 +107,9 @@ def logits2trainId(logits):
     """
     # squeeze logits
     # num_classes = logits.size[1]
+    upsample = torch.nn.Upsample(size=(1024, 2048), mode='bilinear', align_corners=False)
+    logits = upsample(logits.unsqueeze_(0))
+    logits.squeeze_(0)
     logits = torch.argmax(logits, dim=0)
 
     return logits
@@ -128,12 +131,35 @@ def trainId2color(dataset_root, id_map, name):
         if not label.ignoreInEval:
             color_map[id_map == label.trainId] = np.array(label.color)
     color_map = color_map.astype(np.uint8)
+    # color_map = cv2.resize(color_map, dsize=(2048, 1024), interpolation=cv2.INTER_NEAREST)
 
-    # save
+    # save trainIds and color
+    cv2.imwrite(dataset_root + '/' + name, id_map)
+    name = name.replace('labelTrainIds', 'color')
     cv2.imwrite(dataset_root + '/' + name, color_map)
 
     return color_map
 
+
+def trainId2LabelId(dataset_root, train_id, name):
+    """
+        Transform trainId map into labelId map
+        :param dataset_root: the path to dataset root, eg. '/media/ubuntu/disk/cityscapes'
+        :param id_map: torch tensor
+        :param name: name of image, eg. 'gtFine/test/leverkusen/leverkusen_000027_000019_gtFine_labelTrainIds.png'
+        """
+    assert len(train_id.shape) == 2, 'Id_map must be a 2-D tensor of shape (h, w) where h, w = H, W / output_stride'
+    h, w = train_id.shape
+    label_id = np.zeros((h, w, 3))
+    train_id = train_id.cpu().numpy()
+    for label in labels:
+        if not label.ignoreInEval:
+            label_id[train_id == label.trainId] = np.array([label.id]*3)
+    label_id = label_id.astype(np.uint8)
+    # label_id = cv2.resize(label_id, dsize=(2048, 1024), interpolation=cv2.INTER_NEAREST)
+
+    name = name.replace('labelTrainIds', 'labelIds')
+    cv2.imwrite(dataset_root + '/' + name, label_id)
 
 if __name__ == '__main__':
     trainId = cv2.imread('/media/ubuntu/disk/cityscapes/gtFine/train/aachen/aachen_000000_000019_gtFine_labelTrainIds.png')
