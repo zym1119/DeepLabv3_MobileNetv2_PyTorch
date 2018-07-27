@@ -10,8 +10,10 @@ And the segment head of DeepLabv3 comes from paper:
 Please refer to these papers about details like Atrous Convolution, Inverted Residuals, Depthwise Convolution or ASPP if you have some confusion about these blocks.
 
 # Results
-After training for 150 epochs, the result on test set is like:
+After training for 150 epochs, without any further tuning, the first training result on test set is like:
 ![img](https://github.com/zym1119/DeepLabv3_MobileNetv2_PyTorch/blob/master/img/Screenshot%20from%202018-07-13%2010-45-35.png)
+
+Feel free to change any config or code in this repo :-)
 
 # How to use?
 First you need to install dependencies of this implementation.
@@ -71,10 +73,12 @@ then cropped into 512 pixels square and sent into network.
 
 If you have some question, please leave an issue.
 
+ImageNet pre-trained weights are loaded from [Randl's github](https://github.com/Randl/MobileNetV2-pytorch), really helpful!
+
 # TO-DO
 1. add cityscapes visualization tools(Done)
 2. fine-tune training policy
-3. use ImageNet pre-trained model
+3. use ImageNet pre-trained model(Done)
 
 # Logs
 | Date | Changes |
@@ -82,3 +86,4 @@ If you have some question, please leave an issue.
 | 7.11 | fix bugs in network.Test(), add cityscapes output visualization function |
 | 7.12 | fix bugs in network.plot_curve(), add checkpoint split to avoid out of memory, add save loss in network.save_checkpoint() |
 | 7.13 | fix bugs in figure save, add checkpoint@150epoch |
+| 7.27 | upload ImageNet pre-trained weight |
