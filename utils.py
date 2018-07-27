@@ -120,6 +120,8 @@ class Cityscapes(Dataset):
         label = cv2.imread(os.path.join(self.dataset, self.label_list[index]))  # label.size (1024, 2048, 3)
         image_name = self.image_list[index]
         label_name = self.label_list[index]
+        if label.min() == -1:
+            raise ValueError
 
         sample = {'image': image, 'label': label[:, :, 0],
                   'image_name': image_name, 'label_name': label_name}

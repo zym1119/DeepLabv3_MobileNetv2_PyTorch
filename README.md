@@ -74,6 +74,7 @@ If you have some question, please leave an issue.
 # TO-DO
 1. add cityscapes visualization tools(Done)
 2. fine-tune training policy
+3. use ImageNet pre-trained model
 
 # Logs
 | Date | Changes |
