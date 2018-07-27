@@ -1,19 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="17f37269-2b0a-447d-bb27-dc9cb638d9f0" name="Default" comment="add cityscapes visualization&#10;fix bugs in network.Test()">
-      <change afterPath="$PROJECT_DIR$/transfer_weights.py" afterDir="false" />
+    <list default="true" id="17f37269-2b0a-447d-bb27-dc9cb638d9f0" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MobileNetv2_DeepLabv3_cityscapes/checkpoints/Checkpoint_epoch_100.pth.tar" beforeDir="false" afterPath="$PROJECT_DIR$/MobileNetv2_DeepLabv3_cityscapes/checkpoints/Checkpoint_epoch_100.pth.tar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MobileNetv2_DeepLabv3_cityscapes/summaries/events.out.tfevents.1531128660.ubuntu-zym-uisee" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cityscapes.py" beforeDir="false" afterPath="$PROJECT_DIR$/cityscapes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/layers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/progressbar.py" beforeDir="false" afterPath="$PROJECT_DIR$/progressbar.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -30,8 +19,8 @@
       <file leaf-file-name="network.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/network.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-115">
-              <caret line="30" column="29" selection-start-line="30" selection-start-column="29" selection-end-line="30" selection-end-column="29" />
+            <state relative-caret-position="161">
+              <caret line="220" column="67" selection-start-line="220" selection-start-column="65" selection-end-line="220" selection-end-column="67" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -60,7 +49,7 @@
       <file leaf-file-name="cityscapes.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cityscapes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="325">
+            <state relative-caret-position="-407">
               <caret line="95" column="27" selection-start-line="95" selection-start-column="13" selection-end-line="95" selection-end-column="27" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
@@ -69,11 +58,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="transfer_weights.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="transfer_weights.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/transfer_weights.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="375">
-              <caret line="25" column="12" selection-start-line="25" selection-start-column="12" selection-end-line="25" selection-end-column="12" />
+            <state relative-caret-position="644">
+              <caret line="28" column="55" lean-forward="true" selection-start-line="28" selection-start-column="55" selection-end-line="28" selection-end-column="55" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -85,7 +74,7 @@
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="345">
-              <caret line="50" column="49" lean-forward="true" selection-start-line="45" selection-start-column="4" selection-end-line="50" selection-end-column="49" />
+              <caret line="50" column="49" selection-start-line="45" selection-start-column="4" selection-end-line="50" selection-end-column="49" />
             </state>
           </provider>
         </entry>
@@ -99,11 +88,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utils.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="utils.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="644">
-              <caret line="35" column="4" selection-start-line="35" selection-start-column="4" selection-end-line="35" selection-end-column="4" />
+            <state relative-caret-position="214">
+              <caret line="123" column="28" lean-forward="true" selection-start-line="123" selection-start-column="28" selection-end-line="123" selection-end-column="28" />
             </state>
           </provider>
         </entry>
@@ -432,7 +421,14 @@
       <option name="project" value="LOCAL" />
       <updated>1531910390601</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="add ImageNet pre-trained model">
+      <created>1532671785934</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1532671785934</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TodoView">
@@ -448,7 +444,7 @@
     <frame x="65" y="-6" width="1855" height="1086" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49921754" visible="true" weight="0.1474604" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49921754" visible="true" weight="0.1474604" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32983193" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5008192" side_tool="true" weight="0.32878152" />
       <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49918076" weight="0.32983193" />
@@ -457,7 +453,7 @@
       <window_info id="Structure" order="1" sideWeight="0.5007825" side_tool="true" weight="0.1474604" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.32983193" />
       <window_info id="Favorites" order="2" sideWeight="0.5007825" side_tool="true" weight="0.1474604" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49918076" visible="true" weight="0.40651262" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49918076" visible="true" weight="0.40651262" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -499,7 +495,8 @@
     <MESSAGE value="fix network structure, remove smooth conv" />
     <MESSAGE value="fix save image bug, add checkpoint@150epoch" />
     <MESSAGE value="fix bugs" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix bugs" />
+    <MESSAGE value="add ImageNet pre-trained model" />
+    <option name="LAST_COMMIT_MESSAGE" value="add ImageNet pre-trained model" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -509,11 +506,6 @@
           <line>123</line>
           <option name="timeStamp" value="115" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/transfer_weights.py</url>
-          <line>26</line>
-          <option name="timeStamp" value="116" />
-        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -522,7 +514,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="117" />
+      <option name="time" value="118" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -902,16 +894,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cityscapes.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
-          <caret line="95" column="27" selection-start-line="95" selection-start-column="13" selection-end-line="95" selection-end-column="27" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/lib/python3.5/dist-packages/torch/serialization.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-115">
@@ -919,27 +901,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/network.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-115">
-          <caret line="30" column="29" selection-start-line="30" selection-start-column="29" selection-end-line="30" selection-end-column="29" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
-          <caret line="50" column="49" lean-forward="true" selection-start-line="45" selection-start-column="4" selection-end-line="50" selection-end-column="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="644">
-          <caret line="35" column="4" selection-start-line="35" selection-start-column="4" selection-end-line="35" selection-end-column="4" />
+          <caret line="50" column="49" selection-start-line="45" selection-start-column="4" selection-end-line="50" selection-end-column="49" />
         </state>
       </provider>
     </entry>
@@ -952,11 +917,38 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/transfer_weights.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="25" column="12" selection-start-line="25" selection-start-column="12" selection-end-line="25" selection-end-column="12" />
+        <state relative-caret-position="644">
+          <caret line="28" column="55" lean-forward="true" selection-start-line="28" selection-start-column="55" selection-end-line="28" selection-end-column="55" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cityscapes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-407">
+          <caret line="95" column="27" selection-start-line="95" selection-start-column="13" selection-end-line="95" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/network.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="161">
+          <caret line="220" column="67" selection-start-line="220" selection-start-column="65" selection-end-line="220" selection-end-column="67" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="214">
+          <caret line="123" column="28" lean-forward="true" selection-start-line="123" selection-start-column="28" selection-end-line="123" selection-end-column="28" />
         </state>
       </provider>
     </entry>
